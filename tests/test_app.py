@@ -1,7 +1,6 @@
 import pytest
 from flask import template_rendered
 from contextlib import contextmanager
-from your_flask_app import app  # Import your Flask app
 
 @pytest.fixture
 def client():
