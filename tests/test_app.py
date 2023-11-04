@@ -1,28 +1,24 @@
-import pytest
-from flask import template_rendered
-from contextlib import contextmanager
+import json
 
-@pytest.fixture
-def client():
-    with app.test_client() as client:
-        yield client
+def test_get_status(client):
+    res = client.get('/')
+    assert res.status_code == 200
+    expected = { "status": "OFF", "server": "python flask", "version": "1.0.0" }
+    assert expected == json.loads(res.get_data(as_text=True))
 
-@contextmanager
-def captured_templates(app):
-    recorded = []
-    def record(sender, template, context, **extra):
-        recorded.append((template, context))
-    template_rendered.connect(record, app)
-    try:
-        yield recorded
-    finally:
-        template_rendered.disconnect(record, app)
+    res = client.get('/status')
+    assert res.status_code == 200
+    expected = { "status": "OFF", "server": "python flask", "version": "1.0.0" }
+    assert expected == json.loads(res.get_data(as_text=True))
 
-def test_hello_world(client):
-    with captured_templates(app) as templates:
-        response = client.get('/')
-        assert response.status_code == 200
-        assert len(templates) == 1
-        template, context = templates[0]
-        assert template.name == "index.html"
-        assert context["title"] == "Hello"
+def test_activate(client):
+    res = client.post('/activate')
+    assert res.status_code == 200
+    expected = { "status": "ON", "server": "python flask", "version": "1.0.0" }
+    assert expected == json.loads(res.get_data(as_text=True))
+
+def test_deactivate(client):
+    res = client.post('/deactivate')
+    assert res.status_code == 200
+    expected = { "status": "OFF", "server": "python flask", "version": "1.0.0" }
+    assert expected == json.loads(res.get_data(as_text=True))
